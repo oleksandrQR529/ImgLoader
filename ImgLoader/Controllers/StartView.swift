@@ -13,9 +13,7 @@ class StartView: UIViewController {
     @IBOutlet weak var imgTable: UITableView!
 
     private let model = StartViewModel()
-    
-    private var request: DataRequest?
-        
+            
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -42,6 +40,7 @@ extension StartView: UITableViewDataSource, UITableViewDelegate {
             cell.config(model: model.tableCellModels[indexPath.row])
 
             DispatchQueue.main.async {
+                var request: DataRequest?
                 cell.loadImageTapped = { [ weak self]  in
                     DataModel.shared.loadImage(imageUrl: self?.model.getUrlImage(at: indexPath.row) ?? "") { [weak self] image in
                         self?.imgTable.beginUpdates()
@@ -54,10 +53,10 @@ extension StartView: UITableViewDataSource, UITableViewDelegate {
                         cell.progressView.setProgress(Float(progress), animated: true)
                         cell.progresLbl.text = "\(Int(progress * 100))%"
                         self?.imgTable.endUpdates()
-                    } onStarted: { request in
-                        self?.request = request
+                    } onStarted: { Request in
+                        request = Request
                     }
-                    return self!.request
+                    return request
                 }
             }
             cell.checkStatusOfElements()
