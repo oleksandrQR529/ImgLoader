@@ -38,21 +38,19 @@ extension StartView: UITableViewDataSource, UITableViewDelegate {
         
         if let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.identifier, for: indexPath) as? ImageTableViewCell {
             cell.config(model: model.tableCellModels[indexPath.row])
-
+            
             DispatchQueue.main.async {
                 var request: DataRequest?
-                cell.loadImageTapped = { [ weak self]  in
+                cell.loadImageTapped = { [ weak self] in
                     DataModel.shared.loadImage(imageUrl: self?.model.getUrlImage(at: indexPath.row) ?? "") { [weak self] image in
-                        self?.imgTable.beginUpdates()
-                        cell.img?.image = image
                         self?.model.tableCellModels[indexPath.row].setImage(image: image)
                         cell.checkStatusOfElements()
-                        self?.imgTable.endUpdates()
-                    } onLoading: { [weak self] progress in
-                        self?.imgTable.beginUpdates()
-                        cell.progressView.setProgress(Float(progress), animated: true)
-                        cell.progresLbl.text = "\(Int(progress * 100))%"
-                        self?.imgTable.endUpdates()
+                        self?.imgTable.reloadData()
+                    } onLoading: { progress in
+                        if let cell = tableView.cellForRow(at: indexPath) as? ImageTableViewCell {
+                            cell.progressView.setProgress(Float(progress), animated: true)
+                            cell.progresLbl.text = "\(Int(progress * 100))%"
+                        }
                     } onStarted: { Request in
                         request = Request
                     }
