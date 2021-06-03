@@ -7,32 +7,28 @@
 
 import Foundation
 import UIKit
-import Alamofire
 
 final class DataModel {
     static let shared = DataModel()
     
     static let images: [Image] = loadData("ImagesData.json")
     
-    func loadImage(imageUrl url: String, onSuccess: @escaping (UIImage?) -> Void, onLoading: @escaping (Double) -> Void, onStarted: @escaping (DataRequest) -> Void){
+    func loadImage(imageUrl url: String, onSuccess: @escaping (UIImage?) -> Void, onStarted: @escaping (URLSessionDataTask) -> Void) {
         
-        let request = AF.request(url)
-        onStarted(request)
-        DispatchQueue.main.async {
-            request
-                .downloadProgress(closure: { progress in
-                    onLoading(progress.fractionCompleted)
-                })
-                .response { response in
-                guard let data = response.data, let image = UIImage(data: data) else { return }
-                    if request.isCancelled {
-                        onSuccess(nil)
-                    }
-                    else if request.isFinished {
-                        onSuccess(image)
-                    }
+        guard let url = URL(string: url) else { return }
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: url) { data, response, error in
+            DispatchQueue.global(qos: .utility).async {
+                if let err = error {
+                    print("Failed to get data from url:", err)
                 }
+
+                guard let data = data, let image = UIImage(data: data) else { return }
+                onSuccess(image)
+            }
         }
+        onStarted(task)
+        task.resume()
     }
     
 }

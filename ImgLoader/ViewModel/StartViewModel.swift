@@ -15,7 +15,7 @@ class StartViewModel {
     func setTableCellModels() {
         tableCellModels = []
         for image in DataModel.images {
-            let cellModel = TableCellModel(nameImage: image.name, image: nil)
+            let cellModel = TableCellModel(nameImage: image.name, image: nil, loadProgress: 0.0, loadRequest: nil)
             tableCellModels.append(cellModel)
         }
     }

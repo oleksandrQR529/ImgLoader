@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import Alamofire
 
 class ImageTableViewCell: UITableViewCell {
     
@@ -20,23 +19,24 @@ class ImageTableViewCell: UITableViewCell {
     
     weak var cellModel: TableCellModel?
     
-    var loadImageTapped: (() -> (DataRequest?))?
+    var loadImageTapped: (() -> ())?
     
-    private var request: DataRequest?
+    private var request: URLSessionDataTask?
         
     func config(model: TableCellModel) {
-        self.imageName.text = model.nameImage
-        self.cellModel = model
-        self.img?.image = model.image
+        imageName.text = model.nameImage
+        cellModel = model
+        img?.image = model.image
+        request = model.request
+        if let progress = model.imageLoadProgress {
+            progresLbl.text = "\(Int(progress * 100))%"
+            progressView.setProgress(Float(progress), animated: false)
+        }
     }
     
     func checkStatusOfElements() {
         var elementIsHidden = true
-        if cellModel?.image == nil {
-            progressView.setProgress(0, animated: false)
-            progresLbl.text = "0%"
-            elementIsHidden = false
-        }
+        cellModel?.image == nil ? (elementIsHidden = false) : ()
         self.progresLbl.isHidden = elementIsHidden
         self.progressView.isHidden = elementIsHidden
         self.loadBtn.isHidden = elementIsHidden
@@ -44,12 +44,17 @@ class ImageTableViewCell: UITableViewCell {
     
     @IBAction func loadBtnTapped(_ sender: Any) {
         
-        if request == nil {
-            self.request = loadImageTapped?()
+        if self.request == nil {            
+            self.loadImageTapped?()
         }
-        else if !(request?.isCancelled ?? true) {
-            request?.cancel()
+        else {
+            self.request?.cancel()
             self.request = nil
+            self.cellModel?.setRequest(request: nil)
+            self.cellModel?.setLoadProgress(progress: 0.0)
+            if let model = self.cellModel {
+                self.config(model: model)
+            }
         }
     }
     
