@@ -52,7 +52,7 @@ extension StartView: UITableViewDataSource, UITableViewDelegate {
                             self?.imgTable.reloadData()
                         }
                         self?.model.tableCellModels[indexPath.row].setObservation(observation:
-                            request.progress.observe(\.fractionCompleted) { progress, _ in
+                            request.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
                                 self?.model.tableCellModels[indexPath.row].setLoadProgress(progress: progress.fractionCompleted)
                                 DispatchQueue.main.async {
                                     if let cell = self?.imgTable.cellForRow(at: indexPath) as? ImageTableViewCell {
