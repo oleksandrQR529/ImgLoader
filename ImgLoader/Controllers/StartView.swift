@@ -38,30 +38,28 @@ extension StartView: UITableViewDataSource, UITableViewDelegate {
         if let cell = tableView.dequeueReusableCell(withIdentifier: ImageTableViewCell.identifier, for: indexPath) as? ImageTableViewCell {
             cell.config(model: model.tableCellModels[indexPath.row])
             
-            DispatchQueue.global(qos: .utility).async {
-                cell.loadImageTapped = { [weak self] in
-                    DataModel.shared.loadImage(imageUrl: self?.model.getUrlImage(at: indexPath.row) ?? "") { [weak self] image in
-                        self?.model.tableCellModels[indexPath.row].setImage(image: image)
-                        DispatchQueue.main.async {
-                            cell.checkStatusOfElements()
-                            self?.imgTable.reloadData()
-                        }
-                    } onStarted: { [weak self] request in
-                        self?.model.tableCellModels[indexPath.row].setRequest(request: request)
-                        DispatchQueue.main.async {
-                            self?.imgTable.reloadData()
-                        }
-                        self?.model.tableCellModels[indexPath.row].setObservation(observation:
-                            request.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
-                                self?.model.tableCellModels[indexPath.row].setLoadProgress(progress: progress.fractionCompleted)
-                                DispatchQueue.main.async {
-                                    if let cell = self?.imgTable.cellForRow(at: indexPath) as? ImageTableViewCell {
-                                        cell.progresLbl.text = "\(Int(progress.fractionCompleted * 100))%"
-                                        cell.progressView.setProgress(Float(progress.fractionCompleted), animated: true)
-                                    }
-                                }
-                            })
+            cell.loadImageTapped = { [weak self] in
+                DataModel.shared.loadImage(imageUrl: self?.model.getUrlImage(at: indexPath.row) ?? "") { [weak self] image in
+                    self?.model.tableCellModels[indexPath.row].setImage(image: image)
+                    DispatchQueue.main.async {
+                        cell.checkStatusOfElements()
+                        self?.imgTable.reloadData()
                     }
+                } onStarted: { [weak self] request in
+                    self?.model.tableCellModels[indexPath.row].setRequest(request: request)
+                    DispatchQueue.main.async {
+                        self?.imgTable.reloadData()
+                    }
+                    self?.model.tableCellModels[indexPath.row].setObservation(observation:
+                        request.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
+                            self?.model.tableCellModels[indexPath.row].setLoadProgress(progress: progress.fractionCompleted)
+                            DispatchQueue.main.async {
+                                if let cell = self?.imgTable.cellForRow(at: indexPath) as? ImageTableViewCell {
+                                    cell.progresLbl.text = "\(Int(progress.fractionCompleted * 100))%"
+                                    cell.progressView.setProgress(Float(progress.fractionCompleted), animated: true)
+                                }
+                            }
+                        })
                 }
             }
             cell.checkStatusOfElements()
