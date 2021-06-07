@@ -45,9 +45,7 @@ class ImageTableViewCell: UITableViewCell {
     @IBAction func loadBtnTapped(_ sender: Any) {
         
         if self.request == nil {            
-            DispatchQueue.global(qos: .utility).async {
-                self.loadImageTapped?()
-            }
+            self.loadImageTapped?()
         }
         else {
             self.request?.cancel()
